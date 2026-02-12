@@ -1,0 +1,12 @@
+---
+# Tasks for deploying Matrix & LiveKit with Traefik
+
+- name: System Hardening (Swap, UFW, Sysctl)
+  include_tasks: system_hardening.yml
+  when: perform_hardening | default(true) | bool
+
+- name: Docker Setup (Install if missing)
+  include_tasks: docker_setup.yml
+
+- name: Matrix Deployment (Stack, Config, Compose)
+  include_tasks: matrix_deployment.yml

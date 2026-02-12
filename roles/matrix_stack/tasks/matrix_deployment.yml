@@ -1,0 +1,55 @@
+---
+- name: Ensure storage directory exists
+  file:
+    path: "{{ storage_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Template configuration files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ storage_path }}/{{ item.dest }}"
+    mode: '0644'
+  loop:
+    - { src: 'tuwunel.toml.j2', dest: 'tuwunel.toml' }
+    - { src: 'livekit.yaml.j2', dest: 'livekit.yaml' }
+    - { src: 'docker-compose.yml.j2', dest: 'docker-compose.yml' }
+    - { src: 'well-known-client.json.j2', dest: 'well-known-client.json' }
+    - { src: 'well-known-server.json.j2', dest: 'well-known-server.json' }
+    - { src: 'default.conf.j2', dest: 'default.conf' }
+  register: config_changes
+
+- name: Check if Tuwunel image exists
+  command: docker image inspect ghcr.io/matrix-construct/tuwunel:{{ tuwunel_version }}
+  register: tuwunel_image_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Pull Docker images
+  command: docker compose pull
+  args:
+    chdir: "{{ storage_path }}"
+  when: tuwunel_image_check.rc != 0
+
+- name: Start services with Docker Compose
+  command: docker compose up -d --remove-orphans
+  args:
+    chdir: "{{ storage_path }}"
+
+- name: Restart Tuwunel if config changed
+  command: docker compose restart tuwunel
+  args:
+    chdir: "{{ storage_path }}"
+  when: config_changes.results[0].changed
+
+- name: Restart LiveKit if config changed
+  command: docker compose restart livekit
+  args:
+    chdir: "{{ storage_path }}"
+  when: config_changes.results[1].changed
+
+- name: Restart Nginx if config changed
+  command: docker compose restart nginx
+  args:
+    chdir: "{{ storage_path }}"
+  when: config_changes.results[3].changed or config_changes.results[4].changed or config_changes.results[5].changed

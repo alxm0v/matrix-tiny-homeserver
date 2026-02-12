@@ -1,0 +1,6 @@
+---
+- name: Deploy Matrix & LiveKit Infrastructure
+  hosts: all
+  become: true
+  roles:
+    - matrix_stack

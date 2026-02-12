@@ -1,0 +1,114 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+# Swap Configuration - BLOCK Optimization
+- name: Check swap file status
+  stat:
+    path: /swapfile
+  register: swap_file_check
+
+- name: Configure Swap (Block)
+  block:
+    - name: Turn off swap (to allow resizing)
+      command: swapoff /swapfile
+      failed_when: false
+
+    - name: Create/Resize swap file (2GB)
+      command: fallocate -l 2G /swapfile
+
+    - name: Set swap permissions
+      file:
+        path: /swapfile
+        mode: '0600'
+
+    - name: Format swap file
+      command: mkswap /swapfile
+
+    - name: Enable swap file
+      command: swapon /swapfile
+
+    - name: Set vm.swappiness to 10
+      sysctl:
+        name: vm.swappiness
+        value: '10'
+        state: present
+        reload: yes
+
+    - name: Persist swap in fstab
+      mount:
+        path: none
+        src: /swapfile
+        fstype: swap
+        opts: sw
+        state: present
+  when: not swap_file_check.stat.exists or swap_file_check.stat.size < 2147483648
+
+- name: Install required system packages
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - ufw
+      - fail2ban
+    state: present
+    cache_valid_time: 3600
+
+- name: Configure Fail2Ban (jail.local)
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    mode: '0644'
+  notify: restart fail2ban
+
+- name: Ensure Fail2Ban is running
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+
+- name: Include firewall rules
+  include_vars:
+    file: roles/matrix_stack/vars/firewall.yml
+
+# Firewall Configuration - Optimized (No Reset)
+- name: Setup UFW Dead Man's Switch (Cron)
+  cron:
+    name: "Ensure SSH is open"
+    minute: "*/20"
+    job: "/usr/sbin/ufw allow 22/tcp"
+
+- name: Reset UFW rules (Conditional)
+  command: ufw --force reset
+  when: ufw_force_reset | bool
+
+- name: Ensure UFW is installed
+  package:
+    name: ufw
+    state: present
+
+- name: Default deny incoming
+  ufw:
+    default: deny
+    direction: incoming
+
+- name: Default allow outgoing
+  ufw:
+    default: allow
+    direction: outgoing
+
+- name: Allow defined UFW ports
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.proto | default('tcp') }}"
+  loop: "{{ ufw_rules }}"
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+

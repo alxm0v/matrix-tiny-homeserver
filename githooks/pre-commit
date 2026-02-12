@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# ANSIBLE SYNTAX CHECK
+echo "Running Ansible Syntax Check..."
+# Check if ansible-playbook is available
+if command -v ansible-playbook >/dev/null 2>&1; then
+    ansible-playbook -i inventory/hosts.yml deploy.yml --syntax-check
+    if [ $? -ne 0 ]; then
+        echo "CONFIGURATION ERROR: Ansible syntax check failed."
+        exit 1
+    fi
+else
+    echo "WARNING: ansible-playbook not found. Skipping syntax check."
+fi
+
+# SECRET DETECTION
+echo "Scanning for potential secrets..."
+FILES=$(git diff --cached --name-only)
+
+FORBIDDEN="-----BEGIN.*PRIVATE KEY-----|db_password:\s*[\"'].{8,}[\"']|livekit_api_key:\s*[\"'].{8,}[\"']|matrix_registration_token:\s*[\"'].{8,}[\"']"
+
+# Exclude example files from secret check
+FILES_TO_CHECK=$(echo "$FILES" | grep -vE '\.example$|\.gitignore$')
+
+if [ -n "$FILES_TO_CHECK" ]; then
+    grep -E "$FORBIDDEN" $FILES_TO_CHECK > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "SECURITY ERROR: Potential secrets detected in staged files!"
+        echo "The following patterns were found:"
+        grep -E --color=always -H "$FORBIDDEN" $FILES_TO_CHECK
+        echo ""
+        echo "If this is a false positive, commit with --no-verify"
+        exit 1
+    fi
+fi
+
+echo "Pre-commit checks passed."
+exit 0

@@ -1,0 +1,28 @@
+---
+# Public variables for Matrix & LiveKit deployment
+
+# Domain and version settings
+matrix_domain: "site.name" # User should replace this with their actual domain
+livekit_domain: "livekit.{{ matrix_domain }}"
+tuwunel_version: "v1.5.0"         # Tuwunel version
+livekit_version: "latest"
+redis_version: "7-alpine"
+traefik_version: "v3.6.7"
+
+# Ports
+livekit_port: 7880
+matrix_port: 6167
+matrix_allow_registration: false
+# Optimization
+perform_hardening: true
+# LiveKit Node Configuration
+livekit_node_ip: "x.x.x.x"
+livekit_rtc_port_range_start: 50000
+livekit_rtc_port_range_end: 50200
+livekit_tcp_port: 7881
+turn_enabled: true
+turn_udp_port: 3478
+
+# Paths
+storage_path: "/opt/matrix-stack"
+cert_path: "/etc/letsencrypt/live/{{ matrix_domain }}"

@@ -1,0 +1,28 @@
+---
+# SECRET VARIABLES - DO NOT COMMIT TO GIT
+# Copy this file to inventory/group_vars/all.yml and fill in the values
+
+# --- Domain Settings ---
+matrix_domain: example.com
+# livekit_domain: "livekit.{{ matrix_domain }}"
+
+# --- Versions ---
+tuwunel_version: "v1.5.0"
+livekit_version: "latest"
+traefik_version: "v3.6.7"
+
+# --- Ports ---
+matrix_port: 6167
+livekit_port: 7880
+
+# --- LiveKit Keys ---
+livekit_api_key: "CHANGE_ME_API_KEY"
+livekit_api_secret: "CHANGE_ME_API_SECRET"
+livekit_node_ip: "YOUR_SERVER_IP"
+
+# --- Matrix Registration ---
+matrix_allow_registration: false
+matrix_registration_token: "CHANGE_ME_REGISTRATION_TOKEN"
+
+perform_hardening: false # Set to true to enable system hardening
+ufw_force_reset: false # Set to true to wipe firewall rules before applying

@@ -1,0 +1,10 @@
+# Ansible secrets
+inventory/group_vars/all.yml
+inventory/hosts.yml
+*.retry
+*.key
+*.pem
+
+# IDE specific
+.antigravity/
+.vscode/

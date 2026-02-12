@@ -1,0 +1,29 @@
+port: {{ livekit_port }}
+
+keys:
+  "{{ livekit_api_key }}": "{{ livekit_api_secret }}"
+
+turn:
+  enabled: {{ turn_enabled }}
+  udp_port: {{ turn_udp_port }}
+  domain: "{{ livekit_domain }}"
+  external_tls: true
+
+rtc:
+  tcp_port: {{ livekit_tcp_port }}
+  port_range_start: {{ livekit_rtc_port_range_start }}
+  port_range_end: {{ livekit_rtc_port_range_end }}
+  node_ip: "{{ livekit_node_ip }}"
+  use_external_ip: false
+
+redis:
+  address: localhost:6379
+  username: ""
+  password: ""
+  db: 0
+
+logging:
+  json: false
+  level: info
+
+prometheus_port: 6789

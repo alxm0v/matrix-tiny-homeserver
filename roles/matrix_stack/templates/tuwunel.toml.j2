@@ -1,0 +1,50 @@
+# Tuwunel Configuration
+# Adapted from official example: https://tuwunel.chat/configuration.html
+
+[global]
+server_name = "{{ matrix_domain }}"
+port = {{ matrix_port }}
+address = ["0.0.0.0"]
+
+# VOIP / TURN (MSC1182)
+turn_uris = ["turn:{{ livekit_domain }}:3478?transport=udp", "turn:{{ livekit_domain }}:3478?transport=tcp"]
+turn_secret = "{{ livekit_api_secret }}"
+turn_allow_guests = true
+
+# MatrixRTC (MSC4143) - Global parameter might be unsupported in this version
+#rtc_transports = [
+#  { type = "livekit", livekit_service_url = "https://{{ livekit_domain }}" }
+#]
+
+# Database (RocksDB)
+database_path = "/var/lib/tuwunel"
+rocksdb_compression_algo = "zstd"
+db_cache_capacity_mb = 128
+
+# Registration
+allow_registration = {{ matrix_allow_registration | lower }}
+registration_token = "{{ matrix_registration_token }}"
+
+# Federation
+allow_federation = false
+
+# User Directory
+show_all_local_users_in_user_directory = true
+
+# Logging
+log = "info"
+
+[global.well_known]
+client = "https://{{ matrix_domain }}"
+server = "{{ matrix_domain }}:443"
+"org.matrix.msc3575.proxy" = { url = "https://{{ matrix_domain }}" }
+
+[[global.well_known.rtc_transports]]
+type = "livekit"
+livekit_service_url = "https://{{ livekit_domain }}"
+
+[[global.well_known.rtc_foci]]
+type = "livekit"
+livekit_service_url = "https://{{ livekit_domain }}"
+livekit_api_key = "{{ livekit_api_key }}"
+livekit_api_secret = "{{ livekit_api_secret }}"
