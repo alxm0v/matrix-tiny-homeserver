@@ -8,6 +8,9 @@ address = ["0.0.0.0"]
 pusher_idle_timeout = 15
 suppress_push_when_active = true
 
+# Route outbound federation and push requests through the Cloudflare proxy
+proxy = { global = { url = "socks5h://warp-proxy:1080" } }
+
 # VOIP / TURN (MSC1182)
 turn_uris = ["turn:{{ livekit_domain }}:3478?transport=udp", "turn:{{ livekit_domain }}:3478?transport=tcp"]
 turn_secret = "{{ livekit_api_secret }}"

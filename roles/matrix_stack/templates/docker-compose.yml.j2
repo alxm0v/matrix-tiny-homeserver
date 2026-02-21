@@ -2,12 +2,12 @@ services:
   tuwunel:
     image: ghcr.io/matrix-construct/tuwunel:{{ tuwunel_version }}
     restart: unless-stopped
+    depends_on:
+      - warp-proxy
     environment:
       TUWUNEL_CONFIG: /etc/tuwunel.toml
-      HTTPS_PROXY: socks5://host.docker.internal:40000
+      HTTPS_PROXY: socks5://warp-proxy:1080
       NO_PROXY: localhost,127.0.0.1,{{ matrix_domain }},.{{ matrix_domain }},172.16.0.0/12,192.168.0.0/16,10.0.0.0/8
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     volumes:
       - ./tuwunel.toml:/etc/tuwunel.toml
       - tuwunel_data:/var/lib/tuwunel
@@ -154,6 +154,19 @@ services:
         limits:
           memory: 128M
     restart: unless-stopped
+
+  warp-proxy:
+    image: caomingjun/warp
+    restart: unless-stopped
+    environment:
+      - WARP_SLEEP=2
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - matrix_net
 
 networks:
   matrix_net:
