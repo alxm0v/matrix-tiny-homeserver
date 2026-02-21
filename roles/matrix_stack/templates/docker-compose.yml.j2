@@ -4,6 +4,10 @@ services:
     restart: unless-stopped
     environment:
       TUWUNEL_CONFIG: /etc/tuwunel.toml
+      HTTPS_PROXY: socks5://host.docker.internal:40000
+      NO_PROXY: localhost,127.0.0.1,{{ matrix_domain }},.{{ matrix_domain }},172.16.0.0/12,192.168.0.0/16,10.0.0.0/8
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./tuwunel.toml:/etc/tuwunel.toml
       - tuwunel_data:/var/lib/tuwunel

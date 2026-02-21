@@ -8,5 +8,8 @@
 - name: Docker Setup (Install if missing)
   include_tasks: docker_setup.yml
 
+- name: Cloudflare WARP Setup
+  include_tasks: cloudflare_warp.yml
+
 - name: Matrix Deployment (Stack, Config, Compose)
   include_tasks: matrix_deployment.yml
