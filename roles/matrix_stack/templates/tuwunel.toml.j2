@@ -5,6 +5,13 @@
 server_name = "{{ matrix_domain }}"
 port = {{ matrix_port }}
 address = ["0.0.0.0"]
+pusher_idle_timeout = 15
+suppress_push_when_active = true
+
+{% if enable_warp_proxy | default(false) %}
+# Route outbound federation and push requests through the Cloudflare proxy
+proxy = { global = { url = "socks5h://warp-proxy:1080" } }
+{% endif %}
 
 # VOIP / TURN (MSC1182)
 turn_uris = ["turn:{{ livekit_domain }}:3478?transport=udp", "turn:{{ livekit_domain }}:3478?transport=tcp"]

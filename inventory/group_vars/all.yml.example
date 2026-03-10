@@ -26,3 +26,6 @@ matrix_registration_token: "CHANGE_ME_REGISTRATION_TOKEN"
 
 perform_hardening: false # Set to true to enable system hardening
 ufw_force_reset: false # Set to true to wipe firewall rules before applying
+
+# --- Warp Proxy ---
+enable_warp_proxy: false
